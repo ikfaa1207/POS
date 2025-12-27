@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RequestId::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SetBranchContext::class,
+            \App\Http\Middleware\EnsureUserIsActive::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 

@@ -7,11 +7,13 @@ use App\Http\Controllers\Invoices\InvoiceFinalizeController;
 use App\Http\Controllers\Invoices\InvoiceItemController;
 use App\Http\Controllers\Invoices\InvoiceVoidController;
 use App\Http\Controllers\Inventory\InventoryAdjustmentController;
+use App\Http\Controllers\Invites\InviteController;
 use App\Http\Controllers\Payments\InvoicePaymentController;
 use App\Http\Controllers\Payments\PaymentReversalController;
 use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Reports\ReportsController;
+use App\Http\Controllers\Users\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -103,6 +105,27 @@ Route::middleware(['auth', 'role:Owner|Manager'])->group(function () {
     Route::get('/reports', [ReportsController::class, 'index'])
         ->middleware('permission:reports.view')
         ->name('reports.index');
+    Route::get('/users', [UserController::class, 'index'])
+        ->middleware('permission:user.manage')
+        ->name('users.index');
+    Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])
+        ->middleware('permission:user.manage')
+        ->name('users.role');
+    Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])
+        ->middleware('permission:user.manage')
+        ->name('users.status');
+    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])
+        ->middleware('permission:user.manage')
+        ->name('users.reset');
+    Route::get('/invites', [InviteController::class, 'index'])
+        ->middleware('permission:user.invite')
+        ->name('invites.index');
+    Route::post('/invites', [InviteController::class, 'store'])
+        ->middleware('permission:user.invite')
+        ->name('invites.store');
+    Route::post('/invites/{invite}/resend', [InviteController::class, 'resend'])
+        ->middleware('permission:user.invite')
+        ->name('invites.resend');
 });
 
 require __DIR__.'/auth.php';

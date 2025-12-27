@@ -12,6 +12,8 @@ const page = usePage();
 const roles = computed(() => (page.props.auth.roles as string[]) ?? []);
 const canManage = computed(() => roles.value.includes('Owner') || roles.value.includes('Manager'));
 const errorMessage = computed(() => (page.props.errors as { error?: string } | undefined)?.error);
+const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success);
+const flashError = computed(() => (page.props.flash as { error?: string } | undefined)?.error);
 </script>
 
 <template>
@@ -69,6 +71,20 @@ const errorMessage = computed(() => (page.props.errors as { error?: string } | u
                                     :active="route().current('reports.*')"
                                 >
                                     Reports
+                                </NavLink>
+                                <NavLink
+                                    v-if="canManage"
+                                    :href="route('invites.index')"
+                                    :active="route().current('invites.*')"
+                                >
+                                    Invites
+                                </NavLink>
+                                <NavLink
+                                    v-if="canManage"
+                                    :href="route('users.index')"
+                                    :active="route().current('users.*')"
+                                >
+                                    Users
                                 </NavLink>
                             </div>
                         </div>
@@ -204,6 +220,20 @@ const errorMessage = computed(() => (page.props.errors as { error?: string } | u
                         >
                             Reports
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="canManage"
+                            :href="route('invites.index')"
+                            :active="route().current('invites.*')"
+                        >
+                            Invites
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="canManage"
+                            :href="route('users.index')"
+                            :active="route().current('users.*')"
+                        >
+                            Users
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -252,6 +282,16 @@ const errorMessage = computed(() => (page.props.errors as { error?: string } | u
                 <div v-if="errorMessage" class="mx-auto max-w-7xl px-6 pt-6">
                     <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                         {{ errorMessage }}
+                    </div>
+                </div>
+                <div v-if="flashError" class="mx-auto max-w-7xl px-6 pt-6">
+                    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {{ flashError }}
+                    </div>
+                </div>
+                <div v-if="flashSuccess" class="mx-auto max-w-7xl px-6 pt-6">
+                    <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                        {{ flashSuccess }}
                     </div>
                 </div>
                 <slot />

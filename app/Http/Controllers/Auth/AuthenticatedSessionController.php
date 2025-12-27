@@ -34,11 +34,13 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $defaultRoute = $user && $user->hasRole(['Owner', 'Manager'])
-            ? route('dashboard', absolute: false)
-            : route('invoices.index', absolute: false);
+        $isManager = $user && $user->hasRole(['Owner', 'Manager']);
 
-        return redirect()->intended($defaultRoute);
+        if ($isManager) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        return redirect()->route('invoices.index');
     }
 
     /**

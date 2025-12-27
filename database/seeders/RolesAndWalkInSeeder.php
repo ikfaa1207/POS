@@ -41,6 +41,8 @@ class RolesAndWalkInSeeder extends Seeder
             'payment.reverse',
             'inventory.adjust',
             'reports.view',
+            'user.invite',
+            'user.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -66,6 +68,8 @@ class RolesAndWalkInSeeder extends Seeder
             'payment.reverse',
             'inventory.adjust',
             'reports.view',
+            'user.invite',
+            'user.manage',
         ]);
         $salesRole->syncPermissions([
             'client.view',
