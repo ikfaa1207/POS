@@ -34,13 +34,28 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $isManager = $user && $user->hasRole(['Owner', 'Manager']);
 
-        if ($isManager) {
+        if ($user?->can('dashboard.view')) {
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        return redirect()->route('invoices.index');
+        if ($user?->can('invoice.view')) {
+            return redirect()->route('invoices.index');
+        }
+
+        if ($user?->can('product.view')) {
+            return redirect()->route('products.index');
+        }
+
+        if ($user?->can('client.view')) {
+            return redirect()->route('clients.index');
+        }
+
+        if ($user?->can('reports.view')) {
+            return redirect()->route('reports.index');
+        }
+
+        return redirect()->route('profile.edit');
     }
 
     /**

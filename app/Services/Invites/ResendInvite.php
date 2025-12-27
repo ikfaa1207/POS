@@ -15,6 +15,7 @@ class ResendInvite
             'token' => (string) Str::uuid(),
             'expires_at' => now()->addDay(),
             'resent_at' => now(),
+            'revoked_at' => null,
         ])->save();
 
         Mail::to($invite->email)->send(new InviteUser($invite));

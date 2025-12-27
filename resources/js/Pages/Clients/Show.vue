@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     client: {
@@ -29,6 +31,10 @@ const formatMoney = (value: string | number) =>
         style: 'currency',
         currency: 'USD',
     }).format(Number(value));
+
+const { can } = useCan();
+const canUpdate = computed(() => can('client.update'));
+const canViewInvoices = computed(() => can('invoice.view'));
 </script>
 
 <template>
@@ -42,6 +48,7 @@ const formatMoney = (value: string | number) =>
                 </h2>
                 <div class="flex items-center gap-4">
                     <Link
+                        v-if="canUpdate"
                         class="text-sm font-medium text-gray-600 hover:text-gray-900"
                         :href="route('clients.edit', props.client.id)"
                     >
@@ -94,7 +101,7 @@ const formatMoney = (value: string | number) =>
                     </div>
                 </div>
 
-                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                <div v-if="canViewInvoices" class="rounded-lg border border-gray-200 bg-white p-6">
                     <div class="text-lg font-semibold text-gray-900">
                         Invoice history
                     </div>

@@ -22,6 +22,7 @@ class RolesAndWalkInSeeder extends Seeder
         $ownerRole = Role::findOrCreate('Owner');
         $managerRole = Role::findOrCreate('Manager');
         $salesRole = Role::findOrCreate('Sales');
+        $encoderRole = Role::findOrCreate('Encoder');
 
         $permissions = [
             'dashboard.view',
@@ -43,6 +44,7 @@ class RolesAndWalkInSeeder extends Seeder
             'reports.view',
             'user.invite',
             'user.manage',
+            'permissions.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -80,13 +82,18 @@ class RolesAndWalkInSeeder extends Seeder
             'invoice.finalize',
             'payment.record',
         ]);
+        $encoderRole->syncPermissions([
+            'product.view',
+            'product.create',
+            'product.update',
+        ]);
 
         $owner = User::first();
         if (! $owner) {
             $owner = User::create([
                 'name' => 'Owner',
-                'email' => 'owner@example.com',
-                'password' => Hash::make('password'),
+                'email' => env('OWNER_EMAIL', 'owner@example.com'),
+                'password' => Hash::make(env('OWNER_PASSWORD', 'password')),
             ]);
         }
 

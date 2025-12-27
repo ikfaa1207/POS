@@ -4,6 +4,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     filters: {
@@ -69,6 +71,16 @@ const formatMoney = (value: string | number) =>
         style: 'currency',
         currency: 'USD',
     }).format(Number(value));
+
+const { can } = useCan();
+const canView = computed(() => can('reports.view'));
+const submit = () => {
+    if (!canView.value) {
+        return;
+    }
+
+    form.get(route('reports.index'));
+};
 </script>
 
 <template>
@@ -85,7 +97,7 @@ const formatMoney = (value: string | number) =>
             <div class="mx-auto max-w-7xl space-y-6 px-6">
                 <form
                     class="rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="form.get(route('reports.index'))"
+                    @submit.prevent="submit"
                 >
                     <div class="flex flex-wrap items-end gap-4">
                         <div class="flex flex-wrap items-end gap-3">
@@ -145,7 +157,7 @@ const formatMoney = (value: string | number) =>
                             </button>
                         </div>
                         <div class="ml-auto flex items-center gap-3">
-                            <PrimaryButton :disabled="form.processing">
+                            <PrimaryButton v-if="canView" :disabled="form.processing">
                                 <svg
                                     class="mr-2 h-4 w-4"
                                     viewBox="0 0 20 20"

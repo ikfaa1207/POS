@@ -11,7 +11,11 @@ class ListInvites
     public function execute(User $actor): Collection
     {
         $query = UserInvite::query()
-            ->latest()
+            ->leftJoin('users', function ($join) {
+                $join->on('users.email', '=', 'user_invites.email')
+                    ->on('users.company_id', '=', 'user_invites.company_id');
+            })
+            ->latest('user_invites.created_at')
             ->take(50);
 
         if (! $actor->hasRole('Owner')) {
@@ -19,14 +23,18 @@ class ListInvites
         }
 
         return $query->get([
-            'id',
-            'email',
-            'role_name',
-            'created_by',
-            'expires_at',
-            'used_at',
-            'resent_at',
-            'created_at',
+            'user_invites.id',
+            'user_invites.email',
+            'user_invites.role_name',
+            'user_invites.created_by',
+            'user_invites.expires_at',
+            'user_invites.used_at',
+            'user_invites.resent_at',
+            'user_invites.revoked_at',
+            'user_invites.created_at',
+            'user_invites.token',
+            'users.id as user_id',
+            'users.is_active as user_is_active',
         ]);
     }
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     clients: Array<{
@@ -11,6 +13,10 @@ const props = defineProps<{
         is_walk_in: boolean;
     }>;
 }>();
+
+const { can } = useCan();
+const canCreate = computed(() => can('client.create'));
+const canUpdate = computed(() => can('client.update'));
 </script>
 
 <template>
@@ -23,6 +29,7 @@ const props = defineProps<{
                     Clients
                 </h2>
                 <Link
+                    v-if="canCreate"
                     class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
                     :href="route('clients.create')"
                 >
@@ -73,6 +80,7 @@ const props = defineProps<{
                                 </td>
                                 <td class="py-2 pr-4 text-right">
                                     <Link
+                                        v-if="canUpdate"
                                         class="text-sm font-medium text-gray-700 hover:text-gray-900"
                                         :href="route('clients.edit', client.id)"
                                     >

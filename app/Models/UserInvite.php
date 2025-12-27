@@ -21,6 +21,7 @@ class UserInvite extends Model
         'expires_at',
         'used_at',
         'resent_at',
+        'revoked_at',
     ];
 
     protected function casts(): array
@@ -29,6 +30,7 @@ class UserInvite extends Model
             'expires_at' => 'datetime',
             'used_at' => 'datetime',
             'resent_at' => 'datetime',
+            'revoked_at' => 'datetime',
         ];
     }
 }

@@ -37,11 +37,27 @@ class AcceptInviteController extends Controller
 
         Auth::login($user);
 
-        if ($user->hasAnyRole(['Owner', 'Manager'])) {
+        if ($user->can('dashboard.view')) {
             return redirect()->route('dashboard');
         }
 
-        return redirect()->route('invoices.index');
+        if ($user->can('invoice.view')) {
+            return redirect()->route('invoices.index');
+        }
+
+        if ($user->can('product.view')) {
+            return redirect()->route('products.index');
+        }
+
+        if ($user->can('client.view')) {
+            return redirect()->route('clients.index');
+        }
+
+        if ($user->can('reports.view')) {
+            return redirect()->route('reports.index');
+        }
+
+        return redirect()->route('profile.edit');
     }
 
     private function statusForInvite($invite): string
@@ -52,6 +68,10 @@ class AcceptInviteController extends Controller
 
         if ($invite->used_at) {
             return 'used';
+        }
+
+        if ($invite->revoked_at) {
+            return 'revoked';
         }
 
         if ($invite->expires_at->isPast()) {

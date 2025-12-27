@@ -5,6 +5,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const form = useForm({
     name: '',
@@ -13,6 +15,16 @@ const form = useForm({
     phone: '',
     notes: '',
 });
+
+const { can } = useCan();
+const canCreate = computed(() => can('client.create'));
+const submit = () => {
+    if (!canCreate.value) {
+        return;
+    }
+
+    form.post(route('clients.store'));
+};
 </script>
 
 <template>
@@ -37,7 +49,7 @@ const form = useForm({
             <div class="mx-auto max-w-xl px-6">
                 <form
                     class="rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="form.post(route('clients.store'))"
+                    @submit.prevent="submit"
                 >
                     <div class="grid gap-5">
                         <div>
@@ -106,7 +118,7 @@ const form = useForm({
                     </div>
 
                     <div class="mt-6 flex items-center gap-3">
-                        <PrimaryButton :disabled="form.processing">
+                        <PrimaryButton v-if="canCreate" :disabled="form.processing">
                             Save client
                         </PrimaryButton>
                         <Link

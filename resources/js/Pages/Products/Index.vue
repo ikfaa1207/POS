@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 type ProductRow = {
     id: number;
@@ -62,6 +63,10 @@ const applyFilters = () => {
         },
     );
 };
+
+const { can } = useCan();
+const canCreate = computed(() => can('product.create'));
+const canUpdate = computed(() => can('product.update'));
 </script>
 
 <template>
@@ -74,6 +79,7 @@ const applyFilters = () => {
                     Products
                 </h2>
                 <Link
+                    v-if="canCreate"
                     class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
                     :href="route('products.create')"
                 >
@@ -214,6 +220,7 @@ const applyFilters = () => {
                                 </td>
                                 <td class="py-2 pr-4 text-right">
                                     <Link
+                                        v-if="canUpdate"
                                         class="text-sm font-medium text-gray-700 hover:text-gray-900"
                                         :href="route('products.edit', product.id)"
                                     >

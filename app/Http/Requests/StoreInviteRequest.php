@@ -16,7 +16,7 @@ class StoreInviteRequest extends FormRequest
     {
         $actor = $this->user();
         $roles = $actor && $actor->hasRole('Owner')
-            ? ['Owner', 'Manager', 'Sales']
+            ? ['Owner', 'Manager', 'Sales', 'Encoder']
             : ['Sales'];
 
         return [

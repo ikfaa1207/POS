@@ -16,7 +16,7 @@ class UpdateUserRoleRequest extends FormRequest
     {
         $user = $this->user();
         $allowed = $user && $user->hasRole('Owner')
-            ? ['Owner', 'Manager', 'Sales']
+            ? ['Owner', 'Manager', 'Sales', 'Encoder']
             : ['Sales'];
 
         return [

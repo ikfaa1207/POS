@@ -6,11 +6,46 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useCan } from '@/composables/useCan';
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
-const roles = computed(() => (page.props.auth.roles as string[]) ?? []);
-const canManage = computed(() => roles.value.includes('Owner') || roles.value.includes('Manager'));
+const { can } = useCan();
+const canViewDashboard = computed(() => can('dashboard.view'));
+const canViewClients = computed(() => can('client.view'));
+const canViewInvoices = computed(() => can('invoice.view'));
+const canViewProducts = computed(() => can('product.view'));
+const canViewReports = computed(() => can('reports.view'));
+const canManagePermissions = computed(() => can('permissions.manage'));
+const canInviteUsers = computed(() => can('user.invite'));
+const canManageUsers = computed(() => can('user.manage'));
+const canManageSettings = computed(
+    () => canManagePermissions.value || canInviteUsers.value || canManageUsers.value,
+);
+const homeHref = computed(() => {
+    if (canViewDashboard.value) {
+        return route('dashboard');
+    }
+    if (canViewInvoices.value) {
+        return route('invoices.index');
+    }
+    if (canViewProducts.value) {
+        return route('products.index');
+    }
+    if (canViewClients.value) {
+        return route('clients.index');
+    }
+    if (canViewReports.value) {
+        return route('reports.index');
+    }
+
+    return route('profile.edit');
+});
+const settingsActive = computed(() =>
+    route().current('invites.*') ||
+    route().current('users.*') ||
+    route().current('permissions.*'),
+);
 const errorMessage = computed(() => (page.props.errors as { error?: string } | undefined)?.error);
 const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success);
 const flashError = computed(() => (page.props.flash as { error?: string } | undefined)?.error);
@@ -28,7 +63,7 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                         <div class="flex items-center">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
+                                <Link :href="homeHref">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-gray-800"
                                     />
@@ -40,52 +75,87 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex sm:items-center"
                             >
                                 <NavLink
-                                    v-if="canManage"
+                                    v-if="canViewDashboard"
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
                                 </NavLink>
                                 <NavLink
+                                    v-if="canViewClients"
                                     :href="route('clients.index')"
                                     :active="route().current('clients.*')"
                                 >
                                     Clients
                                 </NavLink>
                                 <NavLink
+                                    v-if="canViewInvoices"
                                     :href="route('invoices.index')"
                                     :active="route().current('invoices.*')"
                                 >
                                     Invoices
                                 </NavLink>
                                 <NavLink
-                                    v-if="canManage"
+                                    v-if="canViewProducts"
                                     :href="route('products.index')"
                                     :active="route().current('products.*')"
                                 >
                                     Products
                                 </NavLink>
                                 <NavLink
-                                    v-if="canManage"
+                                    v-if="canViewReports"
                                     :href="route('reports.index')"
                                     :active="route().current('reports.*')"
                                 >
                                     Reports
                                 </NavLink>
-                                <NavLink
-                                    v-if="canManage"
-                                    :href="route('invites.index')"
-                                    :active="route().current('invites.*')"
-                                >
-                                    Invites
-                                </NavLink>
-                                <NavLink
-                                    v-if="canManage"
-                                    :href="route('users.index')"
-                                    :active="route().current('users.*')"
-                                >
-                                    Users
-                                </NavLink>
+                                <Dropdown v-if="canManageSettings" align="left" width="48">
+                                    <template #trigger>
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out"
+                                            :class="
+                                                settingsActive
+                                                    ? 'border-indigo-400 text-gray-900'
+                                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                            "
+                                        >
+                                            Settings
+                                            <svg
+                                                class="ml-2 h-4 w-4"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <DropdownLink
+                                            v-if="canManagePermissions"
+                                            :href="route('permissions.index')"
+                                        >
+                                            Permissions
+                                        </DropdownLink>
+                                        <DropdownLink
+                                            v-if="canInviteUsers"
+                                            :href="route('invites.index')"
+                                        >
+                                            Invites
+                                        </DropdownLink>
+                                        <DropdownLink
+                                            v-if="canManageUsers"
+                                            :href="route('users.index')"
+                                        >
+                                            Users
+                                        </DropdownLink>
+                                    </template>
+                                </Dropdown>
                             </div>
                         </div>
 
@@ -188,47 +258,59 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            v-if="canManage"
+                            v-if="canViewDashboard"
                             :href="route('dashboard')"
                             :active="route().current('dashboard')"
                         >
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="canViewClients"
                             :href="route('clients.index')"
                             :active="route().current('clients.*')"
                         >
                             Clients
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="canViewInvoices"
                             :href="route('invoices.index')"
                             :active="route().current('invoices.*')"
                         >
                             Invoices
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            v-if="canManage"
+                            v-if="canViewProducts"
                             :href="route('products.index')"
                             :active="route().current('products.*')"
                         >
                             Products
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            v-if="canManage"
+                            v-if="canViewReports"
                             :href="route('reports.index')"
                             :active="route().current('reports.*')"
                         >
                             Reports
                         </ResponsiveNavLink>
+                        <div v-if="canManageSettings" class="px-4 pt-4 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                            Settings
+                        </div>
                         <ResponsiveNavLink
-                            v-if="canManage"
+                            v-if="canManagePermissions"
+                            :href="route('permissions.index')"
+                            :active="route().current('permissions.*')"
+                        >
+                            Permissions
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="canInviteUsers"
                             :href="route('invites.index')"
                             :active="route().current('invites.*')"
                         >
                             Invites
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            v-if="canManage"
+                            v-if="canManageUsers"
                             :href="route('users.index')"
                             :active="route().current('users.*')"
                         >

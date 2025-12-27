@@ -4,6 +4,8 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     clients: Array<{
@@ -18,6 +20,16 @@ const defaultClient = props.clients.find((client) => client.is_walk_in);
 const form = useForm({
     client_id: defaultClient?.id ?? '',
 });
+
+const { can } = useCan();
+const canCreate = computed(() => can('invoice.create'));
+const submit = () => {
+    if (!canCreate.value) {
+        return;
+    }
+
+    form.post(route('invoices.store'));
+};
 </script>
 
 <template>
@@ -42,7 +54,7 @@ const form = useForm({
             <div class="mx-auto max-w-3xl px-6">
                 <form
                     class="rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="form.post(route('invoices.store'))"
+                    @submit.prevent="submit"
                 >
                     <div>
                         <InputLabel for="client_id" value="Client" />
@@ -64,7 +76,7 @@ const form = useForm({
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <PrimaryButton :disabled="form.processing">
+                        <PrimaryButton v-if="canCreate" :disabled="form.processing">
                             Create draft
                         </PrimaryButton>
                     </div>

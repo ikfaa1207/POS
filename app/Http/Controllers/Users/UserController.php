@@ -36,7 +36,7 @@ class UserController extends Controller
     {
         $service->execute($request->user(), $user, $request->boolean('is_active'));
 
-        return redirect()->route('users.index')
+        return back()
             ->with('success', 'User status updated.');
     }
 

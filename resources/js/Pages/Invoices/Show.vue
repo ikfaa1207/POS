@@ -4,8 +4,9 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     invoice: {
@@ -63,8 +64,12 @@ const selectedProduct = computed(() =>
     props.products.find((product) => product.id === Number(itemForm.product_id)),
 );
 
-const roles = computed(() => (usePage().props.auth.roles as string[]) ?? []);
-const canManage = computed(() => roles.value.includes('Owner') || roles.value.includes('Manager'));
+const { can } = useCan();
+const canFinalize = computed(() => can('invoice.finalize'));
+const canVoid = computed(() => can('invoice.void'));
+const canEdit = computed(() => can('invoice.edit'));
+const canRecordPayment = computed(() => can('payment.record'));
+const canReversePayment = computed(() => can('payment.reverse'));
 
 watch(
     () => itemForm.product_id,
@@ -142,7 +147,7 @@ const formatDateTime = (value: string | null) => {
                                     Status: {{ props.invoice.status }} / {{ props.paymentStatus }}
                                 </div>
                             </div>
-                            <div v-if="props.invoice.status === 'draft'">
+                            <div v-if="props.invoice.status === 'draft' && canFinalize">
                                 <Link
                                     as="button"
                                     method="post"
@@ -164,7 +169,7 @@ const formatDateTime = (value: string | null) => {
                                     Finalized {{ formatDateTime(props.invoice.finalized_at) }}
                                 </div>
                                 <Link
-                                    v-if="canManage"
+                                    v-if="canVoid"
                                     as="button"
                                     method="post"
                                     class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:border-red-300"
@@ -234,7 +239,7 @@ const formatDateTime = (value: string | null) => {
                                     </td>
                                     <td class="py-2 pr-4 text-right">
                                         <Link
-                                            v-if="props.invoice.status === 'draft'"
+                                            v-if="props.invoice.status === 'draft' && canEdit"
                                             as="button"
                                             method="delete"
                                             class="text-xs font-medium text-red-600 hover:text-red-700"
@@ -255,7 +260,7 @@ const formatDateTime = (value: string | null) => {
                     </div>
 
                     <form
-                        v-if="props.invoice.status === 'draft'"
+                        v-if="props.invoice.status === 'draft' && canEdit"
                         class="mt-6 grid gap-4 border-t pt-6 md:grid-cols-4"
                         @submit.prevent="
                             itemForm.post(route('invoices.items.store', props.invoice.id))
@@ -349,7 +354,7 @@ const formatDateTime = (value: string | null) => {
                                     </td>
                                     <td class="py-2 pr-4 text-right">
                                         <Link
-                                            v-if="Number(payment.amount) > 0"
+                                            v-if="Number(payment.amount) > 0 && canReversePayment"
                                             as="button"
                                             method="post"
                                             class="text-xs font-medium text-gray-600 hover:text-gray-900"
@@ -369,7 +374,7 @@ const formatDateTime = (value: string | null) => {
                     </div>
 
                     <form
-                        v-if="props.invoice.status === 'finalized'"
+                        v-if="props.invoice.status === 'finalized' && canRecordPayment"
                         class="mt-6 grid gap-4 border-t pt-6 md:grid-cols-4"
                         @submit.prevent="
                             paymentForm.post(route('invoices.payments.store', props.invoice.id))

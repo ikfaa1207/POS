@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -29,54 +30,93 @@ const widthClass = computed(() => {
     }[props.width.toString()];
 });
 
-const alignmentClasses = computed(() => {
-    if (props.align === 'left') {
-        return 'ltr:origin-top-left rtl:origin-top-right start-0';
-    } else if (props.align === 'right') {
-        return 'ltr:origin-top-right rtl:origin-top-left end-0';
-    } else {
-        return 'origin-top';
-    }
+const open = ref(false);
+const triggerRef = ref<HTMLElement | null>(null);
+const dropdownRef = ref<HTMLElement | null>(null);
+const floatingStyles = ref({ left: '0px', top: '0px' });
+const cleanup = ref<(() => void) | null>(null);
+
+const placement = computed(() => {
+    return props.align === 'left' ? 'bottom-start' : 'bottom-end';
 });
 
-const open = ref(false);
+const updatePosition = async () => {
+    if (!triggerRef.value || !dropdownRef.value) {
+        return;
+    }
+
+    const { x, y } = await computePosition(triggerRef.value, dropdownRef.value, {
+        placement: placement.value,
+        strategy: 'fixed',
+        middleware: [offset(8), flip(), shift({ padding: 8 })],
+    });
+
+    floatingStyles.value = {
+        left: `${x}px`,
+        top: `${y}px`,
+    };
+};
+
+watch(open, (isOpen) => {
+    if (!isOpen) {
+        cleanup.value?.();
+        cleanup.value = null;
+        return;
+    }
+
+    nextTick(() => {
+        updatePosition();
+        if (!triggerRef.value || !dropdownRef.value) {
+            return;
+        }
+
+        cleanup.value = autoUpdate(triggerRef.value, dropdownRef.value, updatePosition);
+    });
+});
+
+onUnmounted(() => {
+    cleanup.value?.();
+});
 </script>
 
 <template>
-    <div class="relative">
-        <div @click="open = !open">
-            <slot name="trigger" />
+    <div class="relative inline-block">
+        <div ref="triggerRef" @click="open = !open">
+            <slot name="trigger" :open="open" />
         </div>
 
-        <!-- Full Screen Dropdown Overlay -->
-        <div
-            v-show="open"
-            class="fixed inset-0 z-40"
-            @click="open = false"
-        ></div>
-
-        <Transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-75"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
+        <Teleport to="body">
+            <!-- Full Screen Dropdown Overlay -->
             <div
                 v-show="open"
-                class="absolute z-50 mt-2 rounded-md shadow-lg"
-                :class="[widthClass, alignmentClasses]"
-                style="display: none"
+                class="fixed inset-0 z-40"
                 @click="open = false"
+            ></div>
+
+            <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
             >
                 <div
-                    class="rounded-md ring-1 ring-black ring-opacity-5"
-                    :class="contentClasses"
+                    v-show="open"
+                    ref="dropdownRef"
+                    class="fixed z-50 rounded-md border border-gray-200 shadow-lg"
+                    :class="widthClass"
+                    :style="floatingStyles"
+                    @click="open = false"
                 >
-                    <slot name="content" />
+                    <div
+                        class="rounded-md"
+                        :class="contentClasses"
+                    >
+                        <slot name="content" />
+                    </div>
                 </div>
-            </div>
-        </Transition>
+            </Transition>
+        </Teleport>
     </div>
 </template>

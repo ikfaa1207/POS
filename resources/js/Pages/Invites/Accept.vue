@@ -9,7 +9,7 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 const props = defineProps<{
     token: string;
     email: string | null;
-    status: 'ok' | 'invalid' | 'used' | 'expired';
+    status: 'ok' | 'invalid' | 'used' | 'expired' | 'revoked';
 }>();
 
 const errors = usePage().props.errors as { invite?: string } | undefined;
@@ -32,6 +32,7 @@ const form = useForm({
         <div v-if="props.status !== 'ok'" class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <span v-if="props.status === 'invalid'">This invite link is invalid.</span>
             <span v-else-if="props.status === 'used'">This invite has already been used.</span>
+            <span v-else-if="props.status === 'revoked'">This invite has been revoked.</span>
             <span v-else> This invite has expired.</span>
         </div>
         <div v-else-if="errors?.invite" class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

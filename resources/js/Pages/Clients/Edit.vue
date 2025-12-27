@@ -5,6 +5,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     client: {
@@ -24,6 +26,16 @@ const form = useForm({
     phone: props.client.phone ?? '',
     notes: props.client.notes ?? '',
 });
+
+const { can } = useCan();
+const canUpdate = computed(() => can('client.update'));
+const submit = () => {
+    if (!canUpdate.value) {
+        return;
+    }
+
+    form.patch(route('clients.update', props.client.id));
+};
 </script>
 
 <template>
@@ -48,7 +60,7 @@ const form = useForm({
             <div class="mx-auto max-w-3xl px-6">
                 <form
                     class="rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="form.patch(route('clients.update', props.client.id))"
+                    @submit.prevent="submit"
                 >
                     <div class="grid gap-6">
                         <div>
@@ -108,7 +120,7 @@ const form = useForm({
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <PrimaryButton :disabled="form.processing">
+                        <PrimaryButton v-if="canUpdate" :disabled="form.processing">
                             Update client
                         </PrimaryButton>
                     </div>

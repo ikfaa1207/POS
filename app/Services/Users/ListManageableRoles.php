@@ -9,7 +9,7 @@ class ListManageableRoles
     public function execute(User $actor): array
     {
         if ($actor->hasRole('Owner')) {
-            return ['Owner', 'Manager', 'Sales'];
+            return ['Owner', 'Manager', 'Sales', 'Encoder'];
         }
 
         return ['Sales'];

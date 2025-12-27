@@ -10,6 +10,7 @@ use App\Http\Controllers\Inventory\InventoryAdjustmentController;
 use App\Http\Controllers\Invites\InviteController;
 use App\Http\Controllers\Payments\InvoicePaymentController;
 use App\Http\Controllers\Payments\PaymentReversalController;
+use App\Http\Controllers\Permissions\RolePermissionController;
 use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Reports\ReportsController;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/dashboard');
 
 Route::get('/dashboard', DashboardController::class)
-    ->middleware(['auth', 'role:Owner|Manager', 'permission:dashboard.view'])
+    ->middleware(['auth', 'permission:dashboard.view'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -28,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:Owner|Manager|Sales'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/clients', [ClientController::class, 'index'])
         ->middleware('permission:client.view')
         ->name('clients.index');
@@ -77,7 +78,7 @@ Route::middleware(['auth', 'role:Owner|Manager|Sales'])->group(function () {
         ->name('invoices.payments.store');
 });
 
-Route::middleware(['auth', 'role:Owner|Manager'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/products', [ProductController::class, 'index'])
         ->middleware('permission:product.view')
         ->name('products.index');
@@ -96,6 +97,9 @@ Route::middleware(['auth', 'role:Owner|Manager'])->group(function () {
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])
         ->middleware('permission:product.delete')
         ->name('products.destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
     Route::post('/payments/{payment}/reverse', PaymentReversalController::class)
         ->middleware('permission:payment.reverse')
         ->name('payments.reverse');
@@ -126,6 +130,18 @@ Route::middleware(['auth', 'role:Owner|Manager'])->group(function () {
     Route::post('/invites/{invite}/resend', [InviteController::class, 'resend'])
         ->middleware('permission:user.invite')
         ->name('invites.resend');
+    Route::post('/invites/{invite}/revoke', [InviteController::class, 'revoke'])
+        ->middleware('permission:user.invite')
+        ->name('invites.revoke');
+});
+
+Route::middleware(['auth', 'role:Owner'])->group(function () {
+    Route::get('/permissions', [RolePermissionController::class, 'index'])
+        ->middleware('permission:permissions.manage')
+        ->name('permissions.index');
+    Route::patch('/permissions/{role}', [RolePermissionController::class, 'update'])
+        ->middleware('permission:permissions.manage')
+        ->name('permissions.update');
 });
 
 require __DIR__.'/auth.php';

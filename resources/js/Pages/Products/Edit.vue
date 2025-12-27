@@ -6,6 +6,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useCan } from '@/composables/useCan';
 
 const props = defineProps<{
     product: {
@@ -33,6 +35,26 @@ const adjustForm = useForm({
     quantity: '',
     reason: '',
 });
+
+const { can } = useCan();
+const canUpdate = computed(() => can('product.update'));
+const canDelete = computed(() => can('product.delete'));
+const canAdjust = computed(() => can('inventory.adjust'));
+const submit = () => {
+    if (!canUpdate.value) {
+        return;
+    }
+
+    form.patch(route('products.update', props.product.id));
+};
+
+const submitAdjustment = () => {
+    if (!canAdjust.value) {
+        return;
+    }
+
+    adjustForm.post(route('products.inventory.adjust', props.product.id));
+};
 </script>
 
 <template>
@@ -57,7 +79,7 @@ const adjustForm = useForm({
             <div class="mx-auto max-w-3xl px-6">
                 <form
                     class="rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="form.patch(route('products.update', props.product.id))"
+                    @submit.prevent="submit"
                 >
                     <div class="grid gap-6">
                         <div>
@@ -125,6 +147,7 @@ const adjustForm = useForm({
 
                     <div class="mt-6 flex items-center justify-between">
                         <Link
+                            v-if="canDelete"
                             class="text-sm font-medium text-red-600 hover:text-red-700"
                             as="button"
                             method="delete"
@@ -132,18 +155,16 @@ const adjustForm = useForm({
                         >
                             Delete product
                         </Link>
-                        <PrimaryButton :disabled="form.processing">
+                        <PrimaryButton v-if="canUpdate" :disabled="form.processing">
                             Update product
                         </PrimaryButton>
                     </div>
                 </form>
 
                 <form
-                    v-if="props.product.track_inventory"
+                    v-if="props.product.track_inventory && canAdjust"
                     class="mt-6 rounded-lg border border-gray-200 bg-white p-6"
-                    @submit.prevent="
-                        adjustForm.post(route('products.inventory.adjust', props.product.id))
-                    "
+                    @submit.prevent="submitAdjustment"
                 >
                     <div class="text-sm font-semibold text-gray-900">
                         Inventory adjustment
