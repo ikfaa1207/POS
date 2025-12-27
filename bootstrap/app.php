@@ -33,4 +33,63 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return back()->withErrors(['error' => $exception->getMessage()]);
         });
+
+        $redirectForPermissions = function (?Illuminate\Contracts\Auth\Authenticatable $user): ?string {
+            if (! $user) {
+                return null;
+            }
+
+            if ($user->can('dashboard.view')) {
+                return route('dashboard');
+            }
+
+            if ($user->can('invoice.view')) {
+                return route('invoices.index');
+            }
+
+            if ($user->can('product.view')) {
+                return route('products.index');
+            }
+
+            if ($user->can('client.view')) {
+                return route('clients.index');
+            }
+
+            if ($user->can('reports.view')) {
+                return route('reports.index');
+            }
+
+            return route('profile.edit');
+        };
+
+        $handlePermissionRedirect = function (\Throwable $exception, \Illuminate\Http\Request $request) use ($redirectForPermissions) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $exception->getMessage()], 403);
+            }
+
+            $target = $redirectForPermissions($request->user());
+            if (! $target) {
+                return null;
+            }
+
+            if ($request->fullUrlIs($target)) {
+                return null;
+            }
+
+            return redirect($target)->withErrors([
+                'error' => 'You do not have permission to access that page.',
+            ]);
+        };
+
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $exception, \Illuminate\Http\Request $request) use ($handlePermissionRedirect) {
+            return $handlePermissionRedirect($exception, $request);
+        });
+
+        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $exception, \Illuminate\Http\Request $request) use ($handlePermissionRedirect) {
+            return $handlePermissionRedirect($exception, $request);
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $exception, \Illuminate\Http\Request $request) use ($handlePermissionRedirect) {
+            return $handlePermissionRedirect($exception, $request);
+        });
     })->create();

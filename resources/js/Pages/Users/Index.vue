@@ -59,6 +59,10 @@ const canManageRow = (user: UserRow) => {
     );
 };
 
+const formatIdentifier = (id: number) => {
+    return `U${String(id).padStart(4, '0')}`;
+};
+
 const canEditRole = (user: UserRow) => {
     return props.roles.length > 1 && canManageRow(user);
 };
@@ -140,8 +144,13 @@ const resetPassword = (userId: number) => {
                                         >
                                             {{ initials(user.name) }}
                                         </div>
-                                        <div class="font-semibold text-gray-900">
-                                            {{ user.name }}
+                                        <div>
+                                            <div class="font-semibold text-gray-900">
+                                                {{ user.name }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                ID: {{ formatIdentifier(user.id) }} · {{ user.role }}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

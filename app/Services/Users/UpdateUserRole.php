@@ -8,13 +8,25 @@ use Spatie\Permission\Models\Role;
 
 class UpdateUserRole
 {
+    public function __construct(private InvalidateUserSessions $sessions)
+    {
+    }
+
     public function execute(User $actor, User $target, string $roleName): void
     {
         $this->guardSameCompany($actor, $target);
         $this->guardSelf($actor, $target);
         $this->guardRoleChange($actor, $target, $roleName);
 
+        $before = $target->getRoleNames()->sort()->values()->all();
+
         $target->syncRoles([Role::findOrCreate($roleName)]);
+
+        $after = $target->getRoleNames()->sort()->values()->all();
+
+        if ($before !== $after) {
+            $this->sessions->execute($target);
+        }
     }
 
     private function guardSelf(User $actor, User $target): void

@@ -37,11 +37,6 @@ class InviteController extends Controller
                 ->withErrors(['error' => 'Invite already used.']);
         }
 
-        if ($invite->revoked_at) {
-            return redirect()->route('invites.index')
-                ->withErrors(['error' => 'Invite already revoked.']);
-        }
-
         $service->execute($invite);
 
         return redirect()->route('invites.index')

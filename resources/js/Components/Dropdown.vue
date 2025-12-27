@@ -5,7 +5,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 const props = withDefaults(
     defineProps<{
         align?: 'left' | 'right';
-        width?: '48';
+        width?: '48' | '56';
         contentClasses?: string;
     }>(),
     {
@@ -27,6 +27,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 const widthClass = computed(() => {
     return {
         48: 'w-48',
+        56: 'w-56',
     }[props.width.toString()];
 });
 
@@ -104,7 +105,7 @@ onUnmounted(() => {
                 <div
                     v-show="open"
                     ref="dropdownRef"
-                    class="fixed z-50 rounded-md border border-gray-200 shadow-lg"
+                    class="fixed z-50 rounded-md border border-gray-200 shadow-[0_12px_24px_-8px_rgba(15,23,42,0.18),0_6px_12px_-6px_rgba(15,23,42,0.12)]"
                     :class="widthClass"
                     :style="floatingStyles"
                     @click="open = false"

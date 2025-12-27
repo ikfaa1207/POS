@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -49,6 +48,18 @@ const settingsActive = computed(() =>
 const errorMessage = computed(() => (page.props.errors as { error?: string } | undefined)?.error);
 const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success);
 const flashError = computed(() => (page.props.flash as { error?: string } | undefined)?.error);
+const userName = computed(() => page.props.auth.user?.name ?? '');
+const userEmail = computed(() => page.props.auth.user?.email ?? '');
+const userRoles = computed(() => (page.props.auth.roles as string[] | undefined) ?? []);
+const userRoleLabel = computed(() => userRoles.value.join(', ') || 'User');
+const userInitials = computed(() => {
+    return userName.value
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join('');
+});
 </script>
 
 <template>
@@ -136,24 +147,27 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                                         </button>
                                     </template>
                                     <template #content>
-                                        <DropdownLink
+                                        <Link
                                             v-if="canManagePermissions"
                                             :href="route('permissions.index')"
+                                            class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100"
                                         >
                                             Permissions
-                                        </DropdownLink>
-                                        <DropdownLink
+                                        </Link>
+                                        <Link
                                             v-if="canInviteUsers"
                                             :href="route('invites.index')"
+                                            class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100"
                                         >
                                             Invites
-                                        </DropdownLink>
-                                        <DropdownLink
+                                        </Link>
+                                        <Link
                                             v-if="canManageUsers"
                                             :href="route('users.index')"
+                                            class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100"
                                         >
                                             Users
-                                        </DropdownLink>
+                                        </Link>
                                     </template>
                                 </Dropdown>
                             </div>
@@ -162,17 +176,24 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
+                                <Dropdown align="right" width="56">
+                                    <template #trigger="{ open }">
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                class="inline-flex items-center gap-2 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-600 transition duration-150 ease-in-out hover:text-gray-800 focus:outline-none"
+                                                :class="open ? 'text-gray-900' : ''"
                                             >
-                                                {{ $page.props.auth.user.name }}
-
+                                                <span
+                                                    class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-semibold text-white"
+                                                >
+                                                    {{ userInitials || 'U' }}
+                                                </span>
+                                                <span class="max-w-[120px] truncate text-sm font-medium text-gray-800">
+                                                    {{ userName || 'User' }}
+                                                </span>
                                                 <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
+                                                    class="h-4 w-4 text-gray-500"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -188,18 +209,57 @@ const flashError = computed(() => (page.props.flash as { error?: string } | unde
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink
+                                        <div class="px-4 py-3">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ userName || 'User' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ userEmail || 'No email' }}
+                                            </div>
+                                            <div class="mt-3">
+                                                <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+                                                    {{ userRoleLabel }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="border-t border-gray-100"></div>
+                                        <Link
                                             :href="route('profile.edit')"
+                                            class="group flex w-full items-center gap-2 px-4 py-2 text-start text-sm text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100"
                                         >
+                                            <svg
+                                                class="h-4 w-4 text-gray-400 group-hover:text-gray-600"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 16a6 6 0 1112 0v1H4v-1z"
+                                                />
+                                            </svg>
                                             Profile
-                                        </DropdownLink>
-                                        <DropdownLink
+                                        </Link>
+                                        <Link
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
+                                            class="group flex w-full items-center gap-2 px-4 py-2 text-start text-sm text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100"
                                         >
-                                            Log Out
-                                        </DropdownLink>
+                                            <svg
+                                                class="h-4 w-4 text-gray-400 group-hover:text-red-500"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M3 4a2 2 0 012-2h6a2 2 0 012 2v3a1 1 0 11-2 0V4H5v12h6v-3a1 1 0 112 0v3a2 2 0 01-2 2H5a2 2 0 01-2-2V4z"
+                                                />
+                                                <path
+                                                    d="M13.293 7.293a1 1 0 011.414 0L17 9.586a1 1 0 010 1.414l-2.293 2.293a1 1 0 01-1.414-1.414L13.586 11H9a1 1 0 110-2h4.586l-.293-.293a1 1 0 010-1.414z"
+                                                />
+                                            </svg>
+                                            <span class="group-hover:text-red-600">Log Out</span>
+                                        </Link>
                                     </template>
                                 </Dropdown>
                             </div>

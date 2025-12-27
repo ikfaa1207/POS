@@ -7,6 +7,10 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateUserStatus
 {
+    public function __construct(private InvalidateUserSessions $sessions)
+    {
+    }
+
     public function execute(User $actor, User $target, bool $isActive): void
     {
         $this->guardSameCompany($actor, $target);
@@ -14,6 +18,10 @@ class UpdateUserStatus
         $this->guardOwner($actor, $target, $isActive);
 
         $target->forceFill(['is_active' => $isActive])->save();
+
+        if (! $isActive) {
+            $this->sessions->execute($target);
+        }
     }
 
     private function guardSelf(User $actor, User $target): void

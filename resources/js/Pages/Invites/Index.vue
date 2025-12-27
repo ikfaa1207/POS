@@ -201,6 +201,28 @@ const deactivateUser = (invite: (typeof props.invites)[number]) => {
         { preserveScroll: true },
     );
 };
+
+const showCopyLink = (invite: (typeof props.invites)[number]) =>
+    !invite.used_at && !invite.revoked_at;
+const showResend = (invite: (typeof props.invites)[number]) => !invite.used_at;
+const showRevoke = (invite: (typeof props.invites)[number]) =>
+    !invite.used_at && !invite.revoked_at;
+const showViewProfile = (invite: (typeof props.invites)[number]) =>
+    invite.used_at && !!invite.user_id;
+const showChangeRole = (invite: (typeof props.invites)[number]) =>
+    invite.used_at && !!invite.user_id && canManageUsers.value;
+const showRemoveUser = (invite: (typeof props.invites)[number]) =>
+    invite.used_at &&
+    !!invite.user_id &&
+    !!invite.user_is_active &&
+    canManageUsers.value;
+const hasMenuActions = (invite: (typeof props.invites)[number]) =>
+    showCopyLink(invite) ||
+    showResend(invite) ||
+    showRevoke(invite) ||
+    showViewProfile(invite) ||
+    showChangeRole(invite) ||
+    showRemoveUser(invite);
 </script>
 
 <template>
@@ -347,7 +369,7 @@ const deactivateUser = (invite: (typeof props.invites)[number]) => {
                                             </template>
                                             <template #content>
                                                 <button
-                                                    v-if="!invite.used_at && !invite.revoked_at"
+                                                    v-if="showCopyLink(invite)"
                                                     type="button"
                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100"
                                                     @click="copyInviteLink(invite)"
@@ -355,7 +377,7 @@ const deactivateUser = (invite: (typeof props.invites)[number]) => {
                                                     Copy invite link
                                                 </button>
                                                 <Link
-                                                    v-if="!invite.used_at && !invite.revoked_at"
+                                                    v-if="showResend(invite)"
                                                     as="button"
                                                     method="post"
                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100"
@@ -364,7 +386,7 @@ const deactivateUser = (invite: (typeof props.invites)[number]) => {
                                                     Resend
                                                 </Link>
                                                 <Link
-                                                    v-if="!invite.used_at && !invite.revoked_at"
+                                                    v-if="showRevoke(invite)"
                                                     as="button"
                                                     method="post"
                                                     class="block w-full px-4 py-2 text-start text-sm text-red-600 hover:bg-gray-100"
@@ -373,27 +395,33 @@ const deactivateUser = (invite: (typeof props.invites)[number]) => {
                                                     Revoke
                                                 </Link>
                                                 <Link
-                                                    v-if="invite.used_at && invite.user_id"
+                                                    v-if="showViewProfile(invite)"
                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100"
                                                     :href="openUserLink(invite)"
                                                 >
                                                     View profile
                                                 </Link>
                                                 <Link
-                                                    v-if="invite.used_at && invite.user_id && canManageUsers"
+                                                    v-if="showChangeRole(invite)"
                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100"
                                                     :href="openUserLink(invite)"
                                                 >
                                                     Change role
                                                 </Link>
                                                 <button
-                                                    v-if="invite.used_at && invite.user_id && invite.user_is_active && canManageUsers"
+                                                    v-if="showRemoveUser(invite)"
                                                     type="button"
                                                     class="block w-full px-4 py-2 text-start text-sm text-red-600 hover:bg-gray-100"
                                                     @click="deactivateUser(invite)"
                                                 >
                                                     Remove user
                                                 </button>
+                                                <div
+                                                    v-if="!hasMenuActions(invite)"
+                                                    class="px-4 py-2 text-sm text-gray-500"
+                                                >
+                                                    No actions available.
+                                                </div>
                                             </template>
                                         </Dropdown>
                                     </td>
