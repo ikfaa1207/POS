@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { useMoney } from '@/composables/useMoney';
 
 const props = defineProps<{
     todaySales: string;
@@ -20,11 +21,7 @@ const props = defineProps<{
     }>;
 }>();
 
-const formatMoney = (value: string | number) =>
-    new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(Number(value));
+const { formatMoney } = useMoney();
 </script>
 
 <template>

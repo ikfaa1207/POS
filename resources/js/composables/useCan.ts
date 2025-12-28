@@ -3,7 +3,10 @@ import { usePage } from '@inertiajs/vue3';
 
 export const useCan = () => {
     const page = usePage();
-    const permissions = computed(() => (page.props.auth.permissions as string[] | undefined) ?? []);
+    const permissions = computed(() => {
+        const auth = (page.props as { auth?: { permissions?: string[] } }).auth;
+        return auth?.permissions ?? [];
+    });
 
     const can = (permission: string) => permissions.value.includes(permission);
     const canAny = (perms: string[]) => perms.some((perm) => can(perm));

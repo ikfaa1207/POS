@@ -96,7 +96,7 @@ const formatPermissionLabel = (permission: string) => {
     return `${actionLabel} ${subjectLabel}`;
 };
 
-const selectedRole = ref(props.roles[0]?.name ?? '');
+const selectedRole = ref<string>(props.roles[0]?.name ?? '');
 const searchTerm = ref('');
 const selectedGroup = ref('');
 
@@ -181,7 +181,7 @@ const visibleGroups = computed(() => {
     return filteredGroups.value.filter((group) => group.key === selectedGroup.value);
 });
 
-const form = useForm({
+const form = useForm<{ permissions: string[] }>({
     permissions: [],
 });
 
@@ -199,7 +199,7 @@ watch(
             const proceed = window.confirm('You have unsaved changes. Switch roles without saving?');
             if (!proceed) {
                 suppressRoleWatch.value = true;
-                selectedRole.value = old;
+                selectedRole.value = old ?? selectedRole.value;
                 return;
             }
         }

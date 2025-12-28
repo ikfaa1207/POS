@@ -31,6 +31,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'currency' => config('app.currency', 'USD'),
             'auth' => [
                 'user' => $request->user()
                     ? $request->user()->only(['id', 'name', 'email'])

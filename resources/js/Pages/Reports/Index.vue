@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useCan } from '@/composables/useCan';
+import { useMoney } from '@/composables/useMoney';
 
 const props = defineProps<{
     filters: {
@@ -66,13 +67,8 @@ const applyQuickRange = (range: 'today' | 'last7' | 'last30' | 'mtd') => {
     form.end_date = formatDateInput(today);
 };
 
-const formatMoney = (value: string | number) =>
-    new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(Number(value));
-
 const { can } = useCan();
+const { formatMoney } = useMoney();
 const canView = computed(() => can('reports.view'));
 const submit = () => {
     if (!canView.value) {

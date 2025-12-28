@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
 import { useCan } from '@/composables/useCan';
+import { useMoney } from '@/composables/useMoney';
 
 type ProductRow = {
     id: number;
@@ -47,11 +48,7 @@ const filters = reactive({
     per_page: Number(props.filters.per_page ?? 20),
 });
 
-const formatMoney = (value: string | number) =>
-    new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(Number(value));
+const { formatMoney } = useMoney();
 
 const applyFilters = () => {
     router.get(

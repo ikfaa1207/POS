@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useCan } from '@/composables/useCan';
+import { useMoney } from '@/composables/useMoney';
 
 const props = defineProps<{
     client: {
@@ -26,13 +27,8 @@ const props = defineProps<{
     }>;
 }>();
 
-const formatMoney = (value: string | number) =>
-    new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(Number(value));
-
 const { can } = useCan();
+const { formatMoney } = useMoney();
 const canUpdate = computed(() => can('client.update'));
 const canViewInvoices = computed(() => can('invoice.view'));
 </script>
